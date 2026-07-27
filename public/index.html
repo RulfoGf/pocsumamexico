@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>PoC Suma México V2 - Marca Blanca</title>
+  <!-- Estilos del SDK o propios para tu contenedor -->
+  <style>
+    #camera-container {
+      width: 100%;
+      max-width: 500px;
+      height: 350px;
+      border: 2px dashed #ccc;
+      margin: 20px auto;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align: center;">Escaneo de INE (Versión 2 - JS Directo)</h2>
+
+  <!-- Contenedor 100% personalizable donde el SDK incrustará el video de la cámara -->
+  <div id="camera-container"></div>
+
+  <div style="text-align: center;">
+    <button id="btnStart" style="padding: 10px 20px;">Iniciar Captura INE</button>
+  </div>
+
+  <!-- Carga del SDK descargado en el folder public/sdk/ -->
+  <script src="/sdk/id-autocapture/id-autocapture.js"></script>
+
+  <script>
+    document.getElementById('btnStart').addEventListener('click', async () => {
+      try {
+        // 1. Pedir credenciales de sesión a tu backend de Vercel
+        const res = await fetch('/api/createVerification', { method: 'POST' });
+        const sessionData = await res.json();
+
+        // 2. Inicializar el SDK en tu propio contenedor HTML
+        // Nota: Revisa la firma exacta de inicialización en demo-integration-js/id-autocapture
+        const idCapture = new IdAutocapture({
+          container: document.getElementById('camera-container'),
+          token: sessionData.token || sessionData.id,
+          onSuccess: (result) => {
+            console.log("¡Captura de INE realizada con éxito!", result);
+            alert("Captura completa. Datos enviados al Workspace.");
+          },
+          onError: (err) => {
+            console.error("Error en la captura:", err);
+          }
+        });
+
+        // 3. Arrancar la cámara
+        idCapture.start();
+
+      } catch (err) {
+        alert("Error al iniciar flujo: " + err.message);
+      }
+    });
+  </script>
+</body>
+</html>
